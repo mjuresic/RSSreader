@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rssreader.feature_feed.domain.model.Feed
-import com.example.rssreader.feature_feed.domain.use_case.FeedUseCases
+import com.example.rssreader.feature_feed.domain.use_case.FeedInteractor
 import com.example.rssreader.feature_feed.domain.util.FeedOrder
 import com.example.rssreader.feature_feed.domain.util.OrderType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FeedsViewModel @Inject constructor(
-    private val feedUseCases: FeedUseCases
+    private val feedInteractor: FeedInteractor
 ) : ViewModel() {
 
     private val _state = mutableStateOf(FeedsState())
@@ -43,13 +43,13 @@ class FeedsViewModel @Inject constructor(
             }
             is FeedsEvent.DeleteFeed -> {
                 viewModelScope.launch {
-                    feedUseCases.deleteFeed(event.feed)
+                    feedInteractor.deleteFeed(event.feed)
                     recentlyDeletedFeed = event.feed
                 }
             }
             is FeedsEvent.RestoreFeed -> {
                 viewModelScope.launch {
-                    feedUseCases.addFeed(recentlyDeletedFeed ?: return@launch)
+                    feedInteractor.addFeed(recentlyDeletedFeed ?: return@launch)
                     recentlyDeletedFeed = null
                 }
             }
@@ -58,7 +58,7 @@ class FeedsViewModel @Inject constructor(
 
     private fun getFeeds(feedOrder: FeedOrder) {
         getFeedJob?.cancel()
-        getFeedJob = feedUseCases.getFeeds(feedOrder)
+        getFeedJob = feedInteractor.getFeeds(feedOrder)
             .onEach { feeds ->
                 _state.value = state.value.copy(
                     feeds = feeds,

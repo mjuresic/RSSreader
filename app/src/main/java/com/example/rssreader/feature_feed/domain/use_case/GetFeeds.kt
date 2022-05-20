@@ -6,8 +6,9 @@ import com.example.rssreader.feature_feed.domain.util.FeedOrder
 import com.example.rssreader.feature_feed.domain.util.OrderType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class GetFeeds(
+class GetFeeds @Inject constructor(
     private val repository: FeedRepository
 ) {
 

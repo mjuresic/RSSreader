@@ -32,14 +32,7 @@ object AppModule {
         return FeedRepositoryImpl(db.feedDao)
     }
 
+
     @Provides
-    @Singleton
-    fun provideFeedUseCases(repository: FeedRepository): FeedUseCases {
-        return FeedUseCases(
-            getFeeds = GetFeeds(repository),
-            deleteFeed = DeleteFeed(repository),
-            addFeed = AddFeed(repository),
-            getFeed = GetFeed(repository)
-        )
-    }
+    fun provideTime(): () -> Long = {System.currentTimeMillis()}
 }

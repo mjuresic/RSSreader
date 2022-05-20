@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rssreader.feature_feed.domain.model.InvalidFeedException
 import com.example.rssreader.feature_feed.domain.model.Feed
-import com.example.rssreader.feature_feed.domain.use_case.FeedUseCases
+import com.example.rssreader.feature_feed.domain.use_case.FeedInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -16,8 +16,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEditFeedViewModel @Inject constructor(
-    private val feedUseCases: FeedUseCases,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val feedInteractor: FeedInteractor,
+    private val timeProvider: () -> Long
 ) : ViewModel() {
 
     private val _feedTitle = mutableStateOf(FeedTextFieldState(
@@ -30,6 +31,7 @@ class AddEditFeedViewModel @Inject constructor(
     ))
     val feedURL: State<FeedTextFieldState> = _feedURL
 
+    // channel.buffered
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -39,7 +41,7 @@ class AddEditFeedViewModel @Inject constructor(
         savedStateHandle.get<Int>("feedId")?.let { feedId ->
             if(feedId != -1) {
                 viewModelScope.launch {
-                    feedUseCases.getFeed(feedId)?.also { feed ->
+                    feedInteractor.getFeed(feedId)?.also { feed ->
                         currentFeedId = feed.id
                         _feedTitle.value = feedTitle.value.copy(
                             text = feed.title,
@@ -82,11 +84,11 @@ class AddEditFeedViewModel @Inject constructor(
             is AddEditFeedEvent.SaveFeed -> {
                 viewModelScope.launch {
                     try {
-                        feedUseCases.addFeed(
+                        feedInteractor.addFeed(
                             Feed(
                                 title = feedTitle.value.text,
                                 UrlLink = feedURL.value.text,
-                                timestamp = System.currentTimeMillis(),
+                                timestamp = timeProvider(),
                                 id = currentFeedId
                             )
                         )

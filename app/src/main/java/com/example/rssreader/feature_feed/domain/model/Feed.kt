@@ -12,5 +12,5 @@ data class Feed(
 ) {
 
 }
-
+// u novu klasu
 class InvalidFeedException(message: String): Exception(message)
